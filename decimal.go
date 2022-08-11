@@ -1390,6 +1390,15 @@ func (d Decimal) MarshalBinary() (data []byte, err error) {
 
 // Scan implements the sql.Scanner interface for database deserialization.
 func (d *Decimal) Scan(value interface{}) error {
+
+	// override the default behaviour from Scan(), that would return an error
+	// when parsing nil as a string. This will return the field as zero, the
+	// way we expect when querying postgres
+	if value == nil {
+		*d = New(0, 0)
+		return nil
+	}
+
 	// first try to see if the data is stored in database as a Numeric datatype
 	switch v := value.(type) {
 
